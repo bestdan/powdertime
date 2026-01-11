@@ -1,0 +1,74 @@
+# Configuration for Powdertime - Ski Mountain Weather Monitor
+
+# ==============================================================================
+# RESORT SPECIFICATION - Choose ONE of these two approaches:
+# ==============================================================================
+
+# OPTION 1: Manual Resort Specification (NEW)
+# --------------------------------------------
+# Specify exactly which resorts to check. Skips location-based search.
+#
+# resorts:
+#   # By name (case-insensitive, must match database)
+#   - name: "Hunter"
+#   - name: "Killington"
+#
+#   # Custom resort with coordinates
+#   - name: "My Local Hill"
+#     latitude: 42.1234
+#     longitude: -74.5678
+#     elevation: 2500  # optional, in feet
+#     state: "NY"      # optional
+#
+# NOTE: When using manual resorts, 'location' and 'search_radius_miles' are ignored.
+
+# OPTION 2: Location-Based Search (DEFAULT)
+# ------------------------------------------
+# Automatically find ski resorts within a radius of your location.
+
+# Your location (city, state or coordinates)
+location:
+  # Use coordinates for reliable location (Denver, CO coordinates)
+  latitude: 39.7392
+  longitude: -104.9903
+  # Or use city/state (requires internet access to geocoding service):
+  # city: "Denver"
+  # state: "CO"
+  # country: "US"
+
+# Search radius for ski resorts (in miles)
+search_radius_miles: 150
+
+# Snow threshold settings
+snow_threshold:
+  # Minimum inches of new snow to trigger notification
+  min_inches: 4
+  # Number of days to look ahead in forecast
+  forecast_days: 10
+
+# Notification settings
+notifications:
+  # Notification method: console, email, or webhook
+  method: "console"
+
+  # Email settings (if method is "email")
+  email:
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    from_email: "your-email@gmail.com"
+    to_email: "recipient@gmail.com"
+    password: "your-app-password"
+
+  # Webhook settings (if method is "webhook")
+  webhook:
+    url: "https://your-webhook-url.com/notify"
+
+# Weather API settings
+weather_api:
+  # Using Open-Meteo (free, no API key required)
+  provider: "open-meteo"
+  # For other providers like OpenWeatherMap, add API key here
+  # api_key: "your-api-key"
+
+# Check frequency (in hours)
+check_frequency_hours: 6

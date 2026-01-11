@@ -1,0 +1,58 @@
+# Production Configuration for GitHub Actions
+# This file is safe to commit - no secrets stored here
+# Webhook URL is injected at runtime from GitHub Secrets
+
+# ==============================================================================
+# LOCATION-BASED RESORT SEARCH
+# ==============================================================================
+# Configured for zip code 12561 (New Preston, NY)
+# Automatically finds ski resorts within search radius
+
+location:
+  # Coordinates for zip code 12561 area (Hudson Valley, NY)
+  latitude: 41.4901
+  longitude: -73.8626
+
+# Search radius for ski resorts (in miles)
+# 100 miles covers Catskills (Hunter, Bellayre, Windham) and Southern VT
+search_radius_miles: 100
+
+# ==============================================================================
+# SNOW THRESHOLD SETTINGS
+# ==============================================================================
+snow_threshold:
+  # Minimum inches of new snow to trigger notification
+  # 4 inches: Balanced (recommended for personal alerts)
+  # 6 inches: Only significant storms
+  # 2 inches: More frequent alerts (good for powder hounds)
+  min_inches: 4
+
+  # Number of days to look ahead in forecast (1-16)
+  forecast_days: 10
+
+# ==============================================================================
+# NOTIFICATION SETTINGS
+# ==============================================================================
+notifications:
+  # Method: webhook (sends JSON to URL)
+  method: "webhook"
+
+  # Webhook configuration
+  # URL is injected at runtime from GitHub Secret: POWDERTIME_WEBHOOK_URL
+  # The ${POWDERTIME_WEBHOOK_URL} placeholder gets replaced by the workflow
+  webhook:
+    url: "${POWDERTIME_WEBHOOK_URL}"
+
+# ==============================================================================
+# WEATHER API SETTINGS
+# ==============================================================================
+weather_api:
+  # Using Open-Meteo (free, no API key required)
+  provider: "open-meteo"
+
+# ==============================================================================
+# CHECK FREQUENCY (for reference only)
+# ==============================================================================
+# This value is not used by the application
+# Actual schedule is defined in .github/workflows/daily-snow-check.yml
+check_frequency_hours: 24
