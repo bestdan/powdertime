@@ -3,7 +3,7 @@ Snow accumulation analyzer
 
 Analyzes weather forecasts to detect significant snowfall events
 """
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from datetime import datetime
 from .weather import WeatherForecast
 from .resorts import SkiResort
@@ -56,7 +56,7 @@ class SnowAnalyzer:
         self.threshold_inches = threshold_inches
     
     def analyze_forecast(self, resort: SkiResort, 
-                        forecasts: List[WeatherForecast]) -> SnowEvent | None:
+                        forecasts: List[WeatherForecast]) -> Optional[SnowEvent]:
         """
         Analyze forecast for significant snowfall
         
