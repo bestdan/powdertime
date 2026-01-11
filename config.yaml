@@ -42,7 +42,7 @@ search_radius_miles: 150
 # Snow threshold settings
 snow_threshold:
   # Minimum inches of new snow to trigger notification
-  min_inches: 6
+  min_inches: 4
   # Number of days to look ahead in forecast
   forecast_days: 10
 
@@ -50,7 +50,7 @@ snow_threshold:
 notifications:
   # Notification method: console, email, or webhook
   method: "console"
-  
+
   # Email settings (if method is "email")
   email:
     smtp_server: "smtp.gmail.com"
@@ -58,7 +58,7 @@ notifications:
     from_email: "your-email@gmail.com"
     to_email: "recipient@gmail.com"
     password: "your-app-password"
-  
+
   # Webhook settings (if method is "webhook")
   webhook:
     url: "https://your-webhook-url.com/notify"
