@@ -67,7 +67,40 @@ def test_config_dot_notation():
         os.unlink(temp_path)
 
 
+def test_resorts_property_returns_none_when_absent():
+    """Test that resorts property returns None when not configured"""
+    # Test backward compatibility
+    config_data = {'location': {'latitude': 40.0, 'longitude': -105.0}, 'search_radius_miles': 100}
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        yaml.dump(config_data, f)
+        temp_path = f.name
+    try:
+        config = Config(temp_path)
+        assert config.resorts is None
+        assert config.location['latitude'] == 40.0
+        print("✅ Resorts property default test passed")
+    finally:
+        os.unlink(temp_path)
+
+
+def test_resorts_property_returns_list():
+    """Test that resorts property returns list when configured"""
+    config_data = {'resorts': [{'name': 'Vail'}, {'name': 'Custom', 'latitude': 40.0, 'longitude': -105.0}]}
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        yaml.dump(config_data, f)
+        temp_path = f.name
+    try:
+        config = Config(temp_path)
+        assert config.resorts is not None
+        assert len(config.resorts) == 2
+        print("✅ Resorts property with list test passed")
+    finally:
+        os.unlink(temp_path)
+
+
 if __name__ == '__main__':
     test_config_loading()
     test_config_dot_notation()
+    test_resorts_property_returns_none_when_absent()
+    test_resorts_property_returns_list()
     print("\n✅ All config tests passed!")

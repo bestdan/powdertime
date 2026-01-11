@@ -54,8 +54,86 @@ def test_coordinate_parsing():
     print("✅ Coordinate parsing test passed")
 
 
+def test_get_resorts_by_name():
+    """Test getting resorts by name from config"""
+    finder = ResortFinder()
+    config = [{'name': 'Vail'}, {'name': 'breckenridge'}]  # Test case-insensitive
+    resorts = finder.get_resorts_from_config(config)
+    assert len(resorts) == 2
+    assert resorts[0].name == "Vail"
+    assert resorts[1].name == "Breckenridge"
+    print("✅ Get resorts by name test passed")
+
+
+def test_get_custom_resorts():
+    """Test custom resort specification with coordinates"""
+    finder = ResortFinder()
+    config = [{'name': 'My Custom Resort', 'latitude': 42.0, 'longitude': -74.0, 'elevation': 2000, 'state': 'NY'}]
+    resorts = finder.get_resorts_from_config(config)
+    assert len(resorts) == 1
+    assert resorts[0].name == "My Custom Resort"
+    assert resorts[0].latitude == 42.0
+    print("✅ Custom resort test passed")
+
+
+def test_invalid_resort_name():
+    """Test error handling for invalid resort name"""
+    finder = ResortFinder()
+    config = [{'name': 'Nonexistent Resort'}]
+    try:
+        finder.get_resorts_from_config(config)
+        assert False, "Should have raised ValueError"
+    except ValueError as e:
+        assert "not found in database" in str(e)
+        assert "Available resorts:" in str(e)
+    print("✅ Invalid resort name error test passed")
+
+
+def test_mixed_resort_config():
+    """Test mixing named and custom resorts"""
+    finder = ResortFinder()
+    config = [
+        {'name': 'Vail'},
+        {'name': 'Custom Hill', 'latitude': 40.0, 'longitude': -105.0}
+    ]
+    resorts = finder.get_resorts_from_config(config)
+    assert len(resorts) == 2
+    assert resorts[0].name == "Vail"
+    assert resorts[1].name == "Custom Hill"
+    print("✅ Mixed resort config test passed")
+
+
+def test_catskills_resorts_exist():
+    """Test that Catskills resorts are in database"""
+    finder = ResortFinder()
+    hunter = finder._find_resort_by_name("Hunter")
+    bellayre = finder._find_resort_by_name("Bellayre")
+    windham = finder._find_resort_by_name("Windham")
+    assert hunter is not None and hunter.state == "NY"
+    assert bellayre is not None and bellayre.state == "NY"
+    assert windham is not None and windham.state == "NY"
+    print("✅ Catskills resorts exist test passed")
+
+
+def test_find_resort_by_name():
+    """Test case-insensitive resort name lookup"""
+    finder = ResortFinder()
+    vail1 = finder._find_resort_by_name("Vail")
+    vail2 = finder._find_resort_by_name("vail")
+    vail3 = finder._find_resort_by_name("VAIL")
+    assert vail1 == vail2 == vail3
+    assert vail1.name == "Vail"
+    print("✅ Find resort by name test passed")
+
+
 if __name__ == '__main__':
     test_resort_distance()
     test_find_nearby_resorts()
     test_coordinate_parsing()
+    test_get_resorts_by_name()
+    test_get_custom_resorts()
+    test_invalid_resort_name()
+    test_mixed_resort_config()
+    test_catskills_resorts_exist()
+    test_find_resort_by_name()
     print("\n✅ All resort tests passed!")

@@ -3,7 +3,7 @@ Ski resort location finder
 
 Finds ski resorts near a given location
 """
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 
@@ -72,7 +72,10 @@ SKI_RESORTS = [
     
     # New York
     SkiResort("Whiteface", 44.3656, -73.9025, 1220, "NY"),
-    
+    SkiResort("Hunter", 42.2042, -74.2172, 1600, "NY"),
+    SkiResort("Bellayre", 42.1397, -74.5164, 2025, "NY"),
+    SkiResort("Windham", 42.3600, -74.2900, 1500, "NY"),
+
     # Montana
     SkiResort("Big Sky", 45.2847, -111.4008, 7500, "MT"),
     
@@ -140,5 +143,96 @@ class ResortFinder:
         
         # Sort by distance
         nearby_resorts.sort(key=lambda x: x[1])
-        
+
         return [resort for resort, _ in nearby_resorts]
+
+    def get_resorts_from_config(self, resorts_config: list[dict[str, Any]]) -> list[SkiResort]:
+        """
+        Get ski resorts from manual configuration
+
+        Supports two formats:
+        - By name: {'name': 'Vail'} - looks up in SKI_RESORTS
+        - Custom: {'name': 'My Hill', 'latitude': 42.0, 'longitude': -74.0, ...}
+
+        Args:
+            resorts_config: List of resort configurations from config.yaml
+
+        Returns:
+            List of SkiResort objects
+
+        Raises:
+            ValueError: If resort name not found or required fields missing
+        """
+        resorts = []
+
+        for resort_spec in resorts_config:
+            # Name-based lookup
+            if 'name' in resort_spec and 'latitude' not in resort_spec:
+                resort_name = resort_spec['name']
+                resort = self._find_resort_by_name(resort_name)
+                if not resort:
+                    available = ', '.join(r.name for r in SKI_RESORTS)
+                    raise ValueError(
+                        f"Resort '{resort_name}' not found in database. "
+                        f"Available resorts: {available}"
+                    )
+                resorts.append(resort)
+
+            # Custom resort with coordinates
+            elif 'name' in resort_spec and 'latitude' in resort_spec and 'longitude' in resort_spec:
+                resort = SkiResort(
+                    name=resort_spec['name'],
+                    latitude=resort_spec['latitude'],
+                    longitude=resort_spec['longitude'],
+                    elevation=resort_spec.get('elevation'),
+                    state=resort_spec.get('state')
+                )
+                resorts.append(resort)
+
+            else:
+                raise ValueError(
+                    f"Invalid resort specification: {resort_spec}. "
+                    f"Must have 'name' (for lookup) or 'name' + 'latitude' + 'longitude' (for custom)"
+                )
+
+        return resorts
+
+    def _find_resort_by_name(self, name: str) -> SkiResort | None:
+        """
+        Find resort in SKI_RESORTS by name (case-insensitive)
+
+        Args:
+            name: Resort name to search for
+
+        Returns:
+            SkiResort if found, None otherwise
+        """
+        name_lower = name.lower()
+        for resort in SKI_RESORTS:
+            if resort.name.lower() == name_lower:
+                return resort
+        return None
+
+    def get_coordinates_from_zipcode(self, zipcode: str) -> Tuple[float, float]:
+        """
+        Get coordinates from US zipcode
+
+        Args:
+            zipcode: US zipcode (5 digits)
+
+        Returns:
+            Tuple of (latitude, longitude)
+
+        Raises:
+            ValueError: If zipcode cannot be geocoded
+        """
+        try:
+            geolocator = Nominatim(user_agent="powdertime")
+            location = geolocator.geocode(zipcode, country_codes='us')
+
+            if location:
+                return (location.latitude, location.longitude)
+            else:
+                raise ValueError(f"Could not geocode zipcode: {zipcode}")
+        except Exception as e:
+            raise ValueError(f"Geocoding error for zipcode {zipcode}: {e}")

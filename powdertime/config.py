@@ -80,3 +80,11 @@ class Config:
     def check_frequency_hours(self) -> int:
         """Get check frequency in hours"""
         return self.config.get('check_frequency_hours', 6)
+
+    @property
+    def resorts(self) -> list[dict[str, Any]] | None:
+        """Get manual resort configuration"""
+        resorts_config = self.config.get('resorts', None)
+        if resorts_config and len(resorts_config) > 0:
+            return resorts_config
+        return None

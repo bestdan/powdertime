@@ -1,5 +1,31 @@
 # Configuration for Powdertime - Ski Mountain Weather Monitor
 
+# ==============================================================================
+# RESORT SPECIFICATION - Choose ONE of these two approaches:
+# ==============================================================================
+
+# OPTION 1: Manual Resort Specification (NEW)
+# --------------------------------------------
+# Specify exactly which resorts to check. Skips location-based search.
+#
+# resorts:
+#   # By name (case-insensitive, must match database)
+#   - name: "Hunter"
+#   - name: "Killington"
+#
+#   # Custom resort with coordinates
+#   - name: "My Local Hill"
+#     latitude: 42.1234
+#     longitude: -74.5678
+#     elevation: 2500  # optional, in feet
+#     state: "NY"      # optional
+#
+# NOTE: When using manual resorts, 'location' and 'search_radius_miles' are ignored.
+
+# OPTION 2: Location-Based Search (DEFAULT)
+# ------------------------------------------
+# Automatically find ski resorts within a radius of your location.
+
 # Your location (city, state or coordinates)
 location:
   # Use coordinates for reliable location (Denver, CO coordinates)
