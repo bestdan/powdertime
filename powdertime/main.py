@@ -18,7 +18,7 @@ from .notifier import NotificationManager
 class PowdertimeApp:
     """Main application orchestrator"""
     
-    def __init__(self, config_path: str = "config.yaml", cli_zipcode: str | None = None, cli_resorts: list[str] | None = None):
+    def __init__(self, config_path: str = "config.yaml", cli_zipcode: str | None = None, cli_resorts: list[str] | None = None, always_notify: bool = False):
         """
         Initialize application
 
@@ -26,10 +26,12 @@ class PowdertimeApp:
             config_path: Path to configuration file
             cli_zipcode: Optional zipcode from CLI (overrides config location)
             cli_resorts: Optional list of resort names from CLI (overrides config resorts)
+            always_notify: If True, send notification even when no significant snowfall
         """
         self.config = Config(config_path)
         self.cli_zipcode = cli_zipcode
         self.cli_resorts = cli_resorts
+        self.always_notify = always_notify
         self.resort_finder = ResortFinder()
         self.weather_service = WeatherService()
         self.snow_analyzer = SnowAnalyzer(self.config.snow_threshold_inches)
@@ -147,10 +149,10 @@ class PowdertimeApp:
         # Analyze for significant snowfall
         print(f"\n❄️  Analyzing for significant snowfall (threshold: {self.config.snow_threshold_inches}\")")
         events = self.snow_analyzer.find_significant_events(resort_forecasts)
-        
+
         # Send notifications
-        self.notification_manager.notify(events)
-        
+        self.notification_manager.notify(events, always_notify=self.always_notify)
+
         return 0
 
 
@@ -176,6 +178,11 @@ def main():
         help='Resort name to check (can be specified multiple times, overrides config)'
     )
     parser.add_argument(
+        '--always-notify',
+        action='store_true',
+        help='Send notification even when no significant snowfall (useful for confirming workflow ran)'
+    )
+    parser.add_argument(
         '--version',
         action='version',
         version='%(prog)s 1.0.0'
@@ -184,7 +191,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        app = PowdertimeApp(args.config, cli_zipcode=args.zipcode, cli_resorts=args.resorts)
+        app = PowdertimeApp(args.config, cli_zipcode=args.zipcode, cli_resorts=args.resorts, always_notify=args.always_notify)
         sys.exit(app.run())
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")

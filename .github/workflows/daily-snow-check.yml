@@ -12,6 +12,11 @@ on:
         description: "Override snow threshold (inches)"
         required: false
         default: ""
+      always_notify:
+        description: "Send notification even if no snow (confirms workflow ran)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   check-snow:
@@ -45,7 +50,12 @@ jobs:
           echo "========================================"
           echo "Running Powdertime Snow Check"
           echo "========================================"
-          python run.py --config config.runtime.yaml
+          ALWAYS_NOTIFY_FLAG=""
+          if [ "${{ inputs.always_notify }}" == "true" ]; then
+            ALWAYS_NOTIFY_FLAG="--always-notify"
+            echo "Always notify enabled - will send notification even if no snow"
+          fi
+          python run.py --config config.runtime.yaml $ALWAYS_NOTIFY_FLAG
         continue-on-error: true
         id: webhook_run
 
