@@ -3,33 +3,19 @@
 # Webhook URL is injected at runtime from GitHub Secrets
 
 # ==============================================================================
-# RESORT SPECIFICATION - Manual mode (no geocoding needed)
+# LOCATION-BASED RESORT SEARCH
 # ==============================================================================
-# Using manual resort specification for consistent, reliable results
-# Edit this list to match your preferred ski areas
+# Configured for zip code 12561 (New Preston, NY)
+# Automatically finds ski resorts within search radius
 
-resorts:
-  # Northeast - Catskills (NY)
-  - name: "Hunter"
-  - name: "Bellayre"
-  - name: "Windham"
+location:
+  # Coordinates for zip code 12561 area (Hudson Valley, NY)
+  latitude: 41.4901
+  longitude: -73.8626
 
-  # Northeast - Vermont
-  - name: "Killington"
-  - name: "Stowe"
-
-  # Add more resorts as needed:
-  # Rockies (CO): Vail, Breckenridge, Aspen Snowmass, Steamboat, Copper Mountain
-  # Utah: Alta, Snowbird, Park City
-  # California: Mammoth Mountain, Palisades Tahoe
-  # Pacific Northwest: Crystal Mountain, Mt. Baker
-
-  # Custom resort example (uncomment and edit):
-  # - name: "My Local Hill"
-  #   latitude: 42.1234
-  #   longitude: -74.5678
-  #   elevation: 2500
-  #   state: "NY"
+# Search radius for ski resorts (in miles)
+# 100 miles covers Catskills (Hunter, Bellayre, Windham) and Southern VT
+search_radius_miles: 100
 
 # ==============================================================================
 # SNOW THRESHOLD SETTINGS
