@@ -1,0 +1,71 @@
+name: Daily Snow Check
+
+on:
+  # Run daily at 6 AM Mountain Time (1 PM UTC during DST, 2 PM UTC during Standard Time)
+  schedule:
+    - cron: '0 13 * * *'  # 6 AM MT during DST / 7 AM MT during Standard Time
+
+  # Allow manual triggering for testing
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'Override snow threshold (inches)'
+        required: false
+        default: ''
+
+jobs:
+  check-snow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Inject webhook URL into config
+        run: |
+          # Replace placeholder with actual webhook URL from secrets
+          sed 's|\${POWDERTIME_WEBHOOK_URL}|'"$WEBHOOK_URL"'|g' \
+            config.github-actions.yaml > config.runtime.yaml
+          echo "✓ Config file prepared with webhook URL"
+        env:
+          WEBHOOK_URL: ${{ secrets.POWDERTIME_WEBHOOK_URL }}
+
+      - name: Run powdertime (webhook notification)
+        run: |
+          echo "========================================"
+          echo "Running Powdertime Snow Check"
+          echo "========================================"
+          python run.py --config config.runtime.yaml
+        continue-on-error: true
+        id: webhook_run
+
+      - name: Run powdertime (console output for logs)
+        run: |
+          echo ""
+          echo "========================================"
+          echo "Console Output (for GitHub Actions logs)"
+          echo "========================================"
+          python run.py --config config.yaml
+
+      - name: Workflow summary
+        if: always()
+        run: |
+          echo "## Daily Snow Check Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Config**: config.github-actions.yaml" >> $GITHUB_STEP_SUMMARY
+          echo "- **Webhook**: ${WEBHOOK_CONFIGURED}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check the logs above for detailed results." >> $GITHUB_STEP_SUMMARY
+        env:
+          WEBHOOK_CONFIGURED: ${{ secrets.POWDERTIME_WEBHOOK_URL != '' && 'Configured ✓' || 'Not configured ⚠️' }}
