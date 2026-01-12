@@ -3,7 +3,7 @@ name: Daily Snow Check
 on:
   # Run daily at 6 AM Mountain Time (1 PM UTC during DST, 2 PM UTC during Standard Time)
   schedule:
-    - cron: "40 12 * * *" # 6 AM MT during DST / 7 AM MT during Standard Time
+    - cron: "57 23 * * *" # 6 AM MT during DST / 7 AM MT during Standard Time
 
   # Allow manual triggering for testing
   workflow_dispatch:
