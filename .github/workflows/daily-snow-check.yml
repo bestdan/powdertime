@@ -1,9 +1,9 @@
 name: Daily Snow Check
 
 on:
-  # Run daily at 6 AM Mountain Time (13:00 UTC = 6 AM MST / 8 AM EST in winter)
+  # Run daily at 8 PM Eastern Time (01:00 UTC in winter / 00:00 UTC in summer)
   schedule:
-    - cron: "0 13 * * *"
+    - cron: "0 1 * * *"
 
   # Allow manual triggering for testing
   workflow_dispatch:
