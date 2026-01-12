@@ -144,25 +144,43 @@ class WebhookNotification(NotificationService):
         if not events:
             return
 
-        # Prepare payload for snow events
+        # Format message for Slack compatibility
+        message_lines = [
+            "❄️ *POWDER ALERT!* Significant Snow Forecasted ❄️",
+            "",
+            f"Found {len(events)} location(s) with significant snowfall:",
+            ""
+        ]
+
+        for i, event in enumerate(events, 1):
+            message_lines.append(f"{i}. *{event.resort.name}* ({event.resort.state})")
+            message_lines.append(f"   • Total: *{event.total_snowfall:.1f} inches*")
+            message_lines.append(f"   • Period: {event.start_date.strftime('%b %d')} to {event.end_date.strftime('%b %d')}")
+            message_lines.append(f"   • Max daily: {event.max_daily_snowfall:.1f} inches")
+            message_lines.append("")
+
+        text = "\n".join(message_lines)
+
+        # Slack-compatible payload with required "text" field
         payload = {
-            'alert_type': 'powder_alert',
-            'event_count': len(events),
-            'events': [
+            'text': text,
+            'attachments': [
                 {
-                    'resort_name': event.resort.name,
-                    'resort_state': event.resort.state,
-                    'total_snowfall_inches': event.total_snowfall,
-                    'max_daily_snowfall_inches': event.max_daily_snowfall,
-                    'start_date': event.start_date.isoformat() if event.start_date else None,
-                    'end_date': event.end_date.isoformat() if event.end_date else None,
+                    'color': '#36a64f',
+                    'fields': [
+                        {
+                            'title': event.resort.name + ', ' + event.resort.state,
+                            'value': f"{event.total_snowfall:.1f}\" total ({event.start_date.strftime('%b %d')} - {event.end_date.strftime('%b %d')})",
+                            'short': True
+                        }
+                        for event in events[:5]  # Limit to 5 for readability
+                    ]
                 }
-                for event in events
             ]
         }
 
         try:
-            response = requests.post(url, json=payload, timeout=10)
+            response = requests.post(url, json=payload, timeout=30)
             response.raise_for_status()
             print(f"✅ Webhook notification sent to {url}")
         except Exception as e:
@@ -171,14 +189,11 @@ class WebhookNotification(NotificationService):
     def _send_no_snow_webhook(self, url: str):
         """Send confirmation webhook when no snow detected"""
         payload = {
-            'alert_type': 'status_check',
-            'event_count': 0,
-            'message': 'Powdertime check complete - no significant snowfall forecasted',
-            'events': []
+            'text': '✅ *Powdertime Check Complete*\n\nNo significant snowfall forecasted at monitored resorts.'
         }
 
         try:
-            response = requests.post(url, json=payload, timeout=10)
+            response = requests.post(url, json=payload, timeout=30)
             response.raise_for_status()
             print(f"✅ Status check webhook sent to {url}")
         except Exception as e:

@@ -50,10 +50,10 @@ class WeatherService:
         }
         
         try:
-            response = requests.get(self.BASE_URL, params=params, timeout=10)
+            response = requests.get(self.BASE_URL, params=params, timeout=30)
             response.raise_for_status()
             data = response.json()
-            
+
             return self._parse_forecast(data)
         except requests.RequestException as e:
             print(f"Error fetching weather data: {e}")
