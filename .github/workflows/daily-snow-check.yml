@@ -17,7 +17,7 @@ on:
         description: "Send notification even if no snow (confirms workflow ran)"
         required: false
         type: boolean
-        default: false
+        default: true
 
 jobs:
   check-snow:
