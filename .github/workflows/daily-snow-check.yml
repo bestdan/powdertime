@@ -1,9 +1,10 @@
 name: Daily Snow Check
 
 on:
-  # Run daily at 6 AM Mountain Time (1 PM UTC during DST, 2 PM UTC during Standard Time)
   schedule:
-    - cron: "57 23 * * *" # 6 AM MT during DST / 7 AM MT during Standard Time
+    # GitHub Actions uses UTC timezone
+    # Current setting: 00:15 UTC daily (adjust as needed)
+    - cron: "12 0 * * *"
 
   # Allow manual triggering for testing
   workflow_dispatch:
