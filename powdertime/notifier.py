@@ -9,12 +9,15 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List, Dict, Any
 from .analyzer import SnowEvent
+from .weather import WeatherForecast
+from .resorts import SkiResort
 
 
 class NotificationService:
     """Base notification service"""
 
-    def send(self, events: List[SnowEvent], config: Dict[str, Any], always_notify: bool = False):
+    def send(self, events: List[SnowEvent], config: Dict[str, Any], always_notify: bool = False, 
+             resort_forecasts: Dict[SkiResort, List[WeatherForecast]] = None):
         """
         Send notification about snow events
 
@@ -22,6 +25,7 @@ class NotificationService:
             events: List of SnowEvent objects
             config: Notification configuration
             always_notify: If True, send notification even when no events
+            resort_forecasts: Optional dict mapping resorts to their full forecasts
         """
         raise NotImplementedError
 
@@ -29,8 +33,17 @@ class NotificationService:
 class ConsoleNotification(NotificationService):
     """Console notification - prints to stdout"""
 
-    def send(self, events: List[SnowEvent], config: Dict[str, Any], always_notify: bool = False):
+    def send(self, events: List[SnowEvent], config: Dict[str, Any], always_notify: bool = False,
+             resort_forecasts: Dict[SkiResort, List[WeatherForecast]] = None):
         """Print snow events to console"""
+        
+        # Display forecast totals if available
+        if resort_forecasts:
+            print("\n📊 Forecast Summary:")
+            for resort, forecasts in resort_forecasts.items():
+                total_snow = sum(f.snowfall_inches for f in forecasts)
+                print(f"   • {resort.name}: {total_snow:.1f}\" total")
+        
         if not events:
             print("\n✅ No significant snowfall forecasted in the next 10 days.")
             return
@@ -49,7 +62,8 @@ class ConsoleNotification(NotificationService):
 class EmailNotification(NotificationService):
     """Email notification via SMTP"""
 
-    def send(self, events: List[SnowEvent], config: Dict[str, Any], always_notify: bool = False):
+    def send(self, events: List[SnowEvent], config: Dict[str, Any], always_notify: bool = False,
+             resort_forecasts: Dict[SkiResort, List[WeatherForecast]] = None):
         """Send snow events via email"""
         email_config = config.get('email', {})
         smtp_server = email_config.get('smtp_server')
@@ -64,7 +78,7 @@ class EmailNotification(NotificationService):
 
         # If no events but always_notify, send confirmation email
         if not events and always_notify:
-            self._send_no_snow_email(email_config)
+            self._send_no_snow_email(email_config, resort_forecasts)
             return
 
         # No events and not always_notify - skip
@@ -78,7 +92,17 @@ class EmailNotification(NotificationService):
         msg['Subject'] = f"❄️ Powder Alert! {len(events)} Resort(s) with Significant Snow"
 
         # Create body
-        body = "Significant snowfall forecasted at the following resort(s):\n\n"
+        body = ""
+        
+        # Add forecast summary if available
+        if resort_forecasts:
+            body += "Forecast Summary:\n"
+            for resort, forecasts in resort_forecasts.items():
+                total_snow = sum(f.snowfall_inches for f in forecasts)
+                body += f"  • {resort.name}: {total_snow:.1f}\" total\n"
+            body += "\n"
+        
+        body += "Significant snowfall forecasted at the following resort(s):\n\n"
         for event in events:
             body += event.get_summary() + "\n"
 
@@ -95,7 +119,8 @@ class EmailNotification(NotificationService):
         except Exception as e:
             print(f"Error sending email: {e}")
 
-    def _send_no_snow_email(self, email_config: Dict[str, Any]):
+    def _send_no_snow_email(self, email_config: Dict[str, Any], 
+                            resort_forecasts: Dict[SkiResort, List[WeatherForecast]] = None):
         """Send confirmation email when no snow detected"""
         smtp_server = email_config.get('smtp_server')
         smtp_port = email_config.get('smtp_port', 587)
@@ -109,7 +134,17 @@ class EmailNotification(NotificationService):
         msg['To'] = to_email
         msg['Subject'] = "✅ Powdertime Check Complete - No Significant Snow"
 
-        body = "Powdertime ran successfully.\n\nNo significant snowfall forecasted at monitored resorts.\n"
+        body = "Powdertime ran successfully.\n\n"
+        
+        # Add forecast summary if available
+        if resort_forecasts:
+            body += "Forecast Summary:\n"
+            for resort, forecasts in resort_forecasts.items():
+                total_snow = sum(f.snowfall_inches for f in forecasts)
+                body += f"  • {resort.name}: {total_snow:.1f}\" total\n"
+            body += "\n"
+        
+        body += "No significant snowfall forecasted at monitored resorts.\n"
         msg.attach(MIMEText(body, 'plain'))
 
         try:
@@ -126,7 +161,8 @@ class EmailNotification(NotificationService):
 class WebhookNotification(NotificationService):
     """Webhook notification - POST to URL"""
 
-    def send(self, events: List[SnowEvent], config: Dict[str, Any], always_notify: bool = False):
+    def send(self, events: List[SnowEvent], config: Dict[str, Any], always_notify: bool = False,
+             resort_forecasts: Dict[SkiResort, List[WeatherForecast]] = None):
         """Send snow events to webhook"""
         webhook_config = config.get('webhook', {})
         url = webhook_config.get('url')
@@ -137,7 +173,7 @@ class WebhookNotification(NotificationService):
 
         # If no events but always_notify, send confirmation message
         if not events and always_notify:
-            self._send_no_snow_webhook(url)
+            self._send_no_snow_webhook(url, resort_forecasts)
             return
 
         # No events and not always_notify - skip
@@ -148,9 +184,18 @@ class WebhookNotification(NotificationService):
         message_lines = [
             "❄️ *POWDER ALERT!* Significant Snow Forecasted ❄️",
             "",
-            f"Found {len(events)} location(s) with significant snowfall:",
-            ""
         ]
+        
+        # Add forecast summary if available
+        if resort_forecasts:
+            message_lines.append("*Forecast Summary:*")
+            for resort, forecasts in resort_forecasts.items():
+                total_snow = sum(f.snowfall_inches for f in forecasts)
+                message_lines.append(f"  • {resort.name}: {total_snow:.1f}\" total")
+            message_lines.append("")
+        
+        message_lines.append(f"Found {len(events)} location(s) with significant snowfall:")
+        message_lines.append("")
 
         for i, event in enumerate(events, 1):
             message_lines.append(f"{i}. *{event.resort.name}* ({event.resort.state})")
@@ -186,10 +231,22 @@ class WebhookNotification(NotificationService):
         except Exception as e:
             print(f"Error sending webhook: {e}")
 
-    def _send_no_snow_webhook(self, url: str):
+    def _send_no_snow_webhook(self, url: str, resort_forecasts: Dict[SkiResort, List[WeatherForecast]] = None):
         """Send confirmation webhook when no snow detected"""
+        message_lines = ['✅ *Powdertime Check Complete*', '']
+        
+        # Add forecast summary if available
+        if resort_forecasts:
+            message_lines.append('*Forecast Summary:*')
+            for resort, forecasts in resort_forecasts.items():
+                total_snow = sum(f.snowfall_inches for f in forecasts)
+                message_lines.append(f'  • {resort.name}: {total_snow:.1f}" total')
+            message_lines.append('')
+        
+        message_lines.append('No significant snowfall forecasted at monitored resorts.')
+        
         payload = {
-            'text': '✅ *Powdertime Check Complete*\n\nNo significant snowfall forecasted at monitored resorts.'
+            'text': '\n'.join(message_lines)
         }
 
         try:
@@ -226,6 +283,8 @@ class NotificationManager:
         
         self.service = service_class()
     
-    def notify(self, events: List[SnowEvent], always_notify: bool = False):
+    def notify(self, events: List[SnowEvent], always_notify: bool = False, 
+               resort_forecasts: Dict[SkiResort, List[WeatherForecast]] = None):
         """Send notification about snow events"""
-        self.service.send(events, self.config, always_notify=always_notify)
+        self.service.send(events, self.config, always_notify=always_notify, 
+                         resort_forecasts=resort_forecasts)
