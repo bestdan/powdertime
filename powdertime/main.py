@@ -151,7 +151,8 @@ class PowdertimeApp:
         events = self.snow_analyzer.find_significant_events(resort_forecasts)
 
         # Send notifications
-        self.notification_manager.notify(events, always_notify=self.always_notify)
+        self.notification_manager.notify(events, always_notify=self.always_notify, 
+                                        resort_forecasts=resort_forecasts)
 
         return 0
 

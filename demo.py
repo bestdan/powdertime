@@ -78,7 +78,7 @@ def main():
     
     # Send notifications
     notification_manager = NotificationManager(config.get('notifications', {}))
-    notification_manager.notify(events)
+    notification_manager.notify(events, resort_forecasts=resort_forecasts)
     
     return 0
 
