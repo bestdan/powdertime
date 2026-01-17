@@ -75,13 +75,22 @@ SKI_RESORTS = [
     SkiResort("Hunter", 42.2042, -74.2172, 1600, "NY"),
     SkiResort("Bellayre", 42.1397, -74.5164, 2025, "NY"),
     SkiResort("Windham", 42.3600, -74.2900, 1500, "NY"),
+    SkiResort("Plattekill Mountain", 42.2700, -74.6400, 3500, "NY"),
+    SkiResort("Holiday Mountain", 41.6300, -74.6200, 1050, "NY"),
+    SkiResort("Catamount", 42.1691, -73.4770, 2000, "NY"),
+
+    # Massachusetts
+    SkiResort("Butternut", 42.1867, -73.3203, 1800, "MA"),
+
+    # Pennsylvania
+    SkiResort("Camelback", 41.0423, -75.3521, 2133, "PA"),
 
     # Montana
     SkiResort("Big Sky", 45.2847, -111.4008, 7500, "MT"),
-    
+
     # Idaho
     SkiResort("Sun Valley", 43.6972, -114.3517, 5750, "ID"),
-    
+
     # Washington
     SkiResort("Crystal Mountain", 46.9358, -121.4747, 4400, "WA"),
     SkiResort("Stevens Pass", 47.7453, -121.0892, 4061, "WA"),
