@@ -134,12 +134,17 @@ class PowdertimeApp:
         # Fetch weather forecasts
         print(f"\n🌤️  Fetching {self.config.forecast_days}-day forecasts...")
         resort_forecasts = {}
-        
+
         for resort in nearby_resorts:
+            # Convert elevation from feet to meters for API
+            elevation_meters = int(resort.elevation / 3.28084) if resort.elevation else None
+
             forecasts = self.weather_service.get_forecast(
                 resort.latitude,
                 resort.longitude,
-                self.config.forecast_days
+                self.config.forecast_days,
+                elevation=elevation_meters,
+                timezone=resort.get_timezone()
             )
             if forecasts:
                 resort_forecasts[resort] = forecasts

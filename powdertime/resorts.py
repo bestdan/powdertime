@@ -8,6 +8,23 @@ from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
 
 
+# Timezone mapping for US states where ski resorts are located
+STATE_TIMEZONES = {
+    'CO': 'America/Denver',      # Mountain Time
+    'UT': 'America/Denver',      # Mountain Time
+    'WY': 'America/Denver',      # Mountain Time
+    'MT': 'America/Denver',      # Mountain Time
+    'ID': 'America/Denver',      # Mountain Time (most of ID)
+    'CA': 'America/Los_Angeles', # Pacific Time
+    'WA': 'America/Los_Angeles', # Pacific Time
+    'VT': 'America/New_York',    # Eastern Time
+    'NH': 'America/New_York',    # Eastern Time
+    'NY': 'America/New_York',    # Eastern Time
+    'MA': 'America/New_York',    # Eastern Time
+    'PA': 'America/New_York',    # Eastern Time
+}
+
+
 class SkiResort:
     """Represents a ski resort"""
     
@@ -22,7 +39,19 @@ class SkiResort:
     def distance_from(self, lat: float, lon: float) -> float:
         """Calculate distance from given coordinates in miles"""
         return geodesic((self.latitude, self.longitude), (lat, lon)).miles
-    
+
+    def get_timezone(self) -> str:
+        """
+        Get the IANA timezone identifier for this resort
+
+        Returns:
+            Timezone string (e.g., 'America/New_York')
+            Defaults to 'America/Denver' if state not found
+        """
+        if self.state:
+            return STATE_TIMEZONES.get(self.state, 'America/Denver')
+        return 'America/Denver'
+
     def __repr__(self):
         return f"SkiResort({self.name}, {self.state})"
 
@@ -73,7 +102,7 @@ SKI_RESORTS = [
     # New York
     SkiResort("Whiteface", 44.3656, -73.9025, 1220, "NY"),
     SkiResort("Hunter", 42.2042, -74.2172, 1600, "NY"),
-    SkiResort("Bellayre", 42.1397, -74.5164, 2025, "NY"),
+    SkiResort("Bellayre", 42.1517, -74.5014, 3429, "NY"),  # Summit elevation
     SkiResort("Windham", 42.3600, -74.2900, 1500, "NY"),
     SkiResort("Plattekill Mountain", 42.2700, -74.6400, 3500, "NY"),
     SkiResort("Holiday Mountain", 41.6300, -74.6200, 1050, "NY"),
