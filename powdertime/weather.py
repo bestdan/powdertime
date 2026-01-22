@@ -27,16 +27,19 @@ class WeatherService:
     
     BASE_URL = "https://api.open-meteo.com/v1/forecast"
     
-    def get_forecast(self, latitude: float, longitude: float, 
-                    days: int = 10) -> List[WeatherForecast]:
+    def get_forecast(self, latitude: float, longitude: float,
+                    days: int = 10, elevation: int = None,
+                    timezone: str = 'America/Denver') -> List[WeatherForecast]:
         """
         Get weather forecast for a location
-        
+
         Args:
             latitude: Location latitude
             longitude: Location longitude
             days: Number of days to forecast (max 16)
-            
+            elevation: Elevation in meters (improves accuracy for mountains)
+            timezone: IANA timezone identifier (e.g., 'America/New_York')
+
         Returns:
             List of WeatherForecast objects
         """
@@ -46,8 +49,12 @@ class WeatherService:
             'daily': 'snowfall_sum,temperature_2m_max',
             'temperature_unit': 'fahrenheit',
             'forecast_days': min(days, 16),
-            'timezone': 'America/Denver'
+            'timezone': timezone
         }
+
+        # Add elevation if provided (improves accuracy for mountain forecasts)
+        if elevation is not None:
+            params['elevation'] = elevation
         
         try:
             response = requests.get(self.BASE_URL, params=params, timeout=30)
