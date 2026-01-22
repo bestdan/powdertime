@@ -73,7 +73,7 @@ SKI_RESORTS = [
     # New York
     SkiResort("Whiteface", 44.3656, -73.9025, 1220, "NY"),
     SkiResort("Hunter", 42.2042, -74.2172, 1600, "NY"),
-    SkiResort("Bellayre", 42.1397, -74.5164, 2025, "NY"),
+    SkiResort("Bellayre", 42.127342, -74.518576, 2025, "NY"),
     SkiResort("Windham", 42.3600, -74.2900, 1500, "NY"),
     SkiResort("Plattekill Mountain", 42.2700, -74.6400, 3500, "NY"),
     SkiResort("Holiday Mountain", 41.6300, -74.6200, 1050, "NY"),
